@@ -6,9 +6,13 @@ import ta
 # Function to fetch historical data
 def fetch_data(stock_code):
     try:
+        # Fetching data from Yahoo Finance
         data = yf.download(stock_code, period='3y', interval='1d')
+        
+        # Check if the data is empty
         if data.empty:
             raise ValueError("No data found for this stock code.")
+        
         return data
     except Exception as e:
         raise ValueError(f"Error fetching data: {str(e)}")
