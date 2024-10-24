@@ -8,7 +8,6 @@ def fetch_data(stock_code):
     try:
         # Fetching data from Yahoo Finance
         data = yf.download(stock_code, period='5y', interval='1d')  # Changed '3y' to '5y'
-        print(data)  # Debugging line to check fetched data
         
         # Check if the data is empty
         if data.empty:
@@ -55,14 +54,15 @@ if stock_code:
         data = fetch_data(stock_code)
         
         st.write(f"Historical Data for {stock_code}:")
-        st.line_chart(data['Close'])
+        st.line_chart(data['Close'])  # This should work as it is a single column
 
         # Calculate indicators
         data_with_indicators = calculate_indicators(data)
 
-        # Display indicators
+        # Display indicators - ensure we are passing a DataFrame
         st.write("Indicators:")
-        st.line_chart(data_with_indicators[['RSI', 'ATR', 'MACD', '%K', '%D']])
+        indicators_to_plot = data_with_indicators[['RSI', 'ATR', 'MACD', '%K', '%D']]
+        st.line_chart(indicators_to_plot)  # This should now work correctly
 
         # Buy/Sell suggestion based on simple rules (this can be improved)
         last_rsi = data_with_indicators['RSI'].iloc[-1]
