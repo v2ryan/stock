@@ -8,6 +8,7 @@ def fetch_data(stock_code):
     try:
         # Fetching data from Yahoo Finance
         data = yf.download(stock_code, period='3y', interval='1d')
+        print(data)  # Debugging line to check fetched data
         
         # Check if the data is empty
         if data.empty:
