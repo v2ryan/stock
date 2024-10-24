@@ -14,16 +14,20 @@ def fetch_data(stock_code):
             raise ValueError("No data found for this stock code.")
         
         return data
+    except ValueError as ve:
+        raise ve  # Raise specific ValueError
     except Exception as e:
-        raise ValueError(f"Error fetching data: {str(e)}")
+        raise RuntimeError(f"Error fetching data: {str(e)}")
 
 # Function to calculate indicators
 def calculate_indicators(data):
     # RSI
-    data['RSI'] = ta.momentum.RSIIndicator(data['Close']).rsi()
+    rsi = ta.momentum.RSIIndicator(data['Close'])
+    data['RSI'] = rsi.rsi()
 
     # ATR
-    data['ATR'] = ta.volatility.AverageTrueRange(data['High'], data['Low'], data['Close']).average_true_range()
+    atr = ta.volatility.AverageTrueRange(data['High'], data['Low'], data['Close'])
+    data['ATR'] = atr.average_true_range()
 
     # MACD
     macd = ta.trend.MACD(data['Close'])
@@ -35,7 +39,8 @@ def calculate_indicators(data):
     data['%K'] = stoch.stoch()
     data['%D'] = stoch.stoch_signal()
 
-    return data
+    # Drop NaN values that may arise from indicator calculations
+    return data.dropna()
 
 # Streamlit app layout
 st.title("Stock Analysis App")
@@ -59,12 +64,18 @@ if stock_code:
         st.line_chart(data_with_indicators[['RSI', 'ATR', 'MACD', '%K', '%D']])
 
         # Buy/Sell suggestion based on simple rules (this can be improved)
-        if (data_with_indicators['RSI'].iloc[-1] < 30) and (data_with_indicators['MACD'].iloc[-1] > data_with_indicators['MACD_Signal'].iloc[-1]):
+        last_rsi = data_with_indicators['RSI'].iloc[-1]
+        last_macd = data_with_indicators['MACD'].iloc[-1]
+        last_macd_signal = data_with_indicators['MACD_Signal'].iloc[-1]
+
+        if (last_rsi < 30) and (last_macd > last_macd_signal):
             st.write("Suggestion: Buy")
-        elif (data_with_indicators['RSI'].iloc[-1] > 70) and (data_with_indicators['MACD'].iloc[-1] < data_with_indicators['MACD_Signal'].iloc[-1]):
+        elif (last_rsi > 70) and (last_macd < last_macd_signal):
             st.write("Suggestion: Sell")
         else:
             st.write("Suggestion: Hold")
 
     except ValueError as e:
+        st.error(str(e))
+    except RuntimeError as e:
         st.error(str(e))
