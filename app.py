@@ -7,7 +7,7 @@ import ta
 def fetch_data(stock_code):
     try:
         # Fetching data from Yahoo Finance
-        data = yf.download(stock_code, period='3y', interval='1d')
+        data = yf.download(stock_code, period='5y', interval='1d')  # Changed '3y' to '5y'
         print(data)  # Debugging line to check fetched data
         
         # Check if the data is empty
